@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <meta>
+    <name>Helix — Job Search Coach</name>
+    <version>3.0.0</version>
+    <created>2026-03-17</created>
+    <last_updated>2026-04-07</last_updated>
+    <language>Python 3.11+</language>
+    <platform>Windows (local execution)</platform>
+    <status>Coach model: Discord-first review, manual apply, Helix Coach NL channel, schedule-aware digests</status>
+    <description>
+      Helix scrapes job listings from multiple sources, scores them with keyword and LLM matching,
+      deduplicates cross-source, and can tailor resumes/cover letters via LLM with ATS compliance.
+      Primary workflow is Discord: /review queue, approve → apply card (URL, match, I Applied /
+      Remind Me (2h) / Resume Tips / Skip). User applies in the browser; no CLI/browser auto-submit
+      of ATS forms. Optional #helix-coach channel: natural-language job URL analysis (fit, viability,
+      tips), cover-letter drafts, LinkedIn outreach, resume Q&amp;A (Ollama or OpenAI). SQLite tracks
+      jobs; Excel tracker.xlsx has Applications (full queue), Applied (submitted apps, refreshed on
+      apply and on /tracker), and Stats. Optional Gmail read-only monitoring. Digests, scans, and
+      reminders follow config/profile.yaml schedule (timezone + apply_windows).
+    </description>
+  </meta>
+
+  <user_profile note="Illustrative defaults for PROJECT_CONTEXT; real PII lives in config/profile.yaml (gitignored).">
+    <current_role>Quality Engineer (Contractor)</current_role>
+    <visa_status>F1-OPT (requires H1B sponsorship)</visa_status>
+    <experience_level>Mid-level (2-5 years)</experience_level>
+    <target_roles>
+      <role>SDET / Software Development Engineer in Test</role>
+      <role>Software Engineer</role>
+      <role>QA Engineer (Manual + Automation)</role>
+      <role>QA Automation Engineer</role>
+    </target_roles>
+    <location_preference>All (remote, hybrid, on-site - widest net)</location_preference>
+    <employment_type>Full-time only (transitioning from contractor)</employment_type>
+    <email_provider>Gmail</email_provider>
+    <sponsorship_priority>
+      Prioritize jobs from known H1B sponsors, but do NOT exclude non-sponsor jobs.
+      Tag all jobs with sponsorship likelihood for informed decision-making.
+    </sponsorship_priority>
+  </user_profile>
+
+  <daily_target>
+    <applications_per_day>Configured in config/profile.yaml as daily_application_target (example: 5).</applications_per_day>
+    <quality_policy>
+      Quality is king. Tailored documents should pass the quality gate (LLM-scored >= 7/10)
+      where document generation is used. Coach workflow emphasizes thoughtful manual applications
+      over volume.
+    </quality_policy>
+  </daily_target>
+
+  <architecture>
+    <phases>
+      <phase number="1" name="Core" status="complete">
+        Profile config, API scrapers (Adzuna, Jooble, The Muse), SQLite DB,
+        keyword scoring, sponsorship detection, Excel tracker with formatting
+      </phase>
+      <phase number="2" name="Smart Matching" status="complete">
+        LLM semantic scoring (OpenAI gpt-4o-mini), cross-source dedup (thefuzz),
+        Greenhouse API scraper (29 boards), Lever API scraper (25 companies),
+        Google Jobs via SerpAPI, LinkedIn Playwright scraper (50/session cap),
+        enhanced score blending (35% keyword + 65% LLM)
+      </phase>
+      <phase number="3" name="Quality + Documents" status="complete">
+        Daily planner (top 25 with diversity rules + sponsor priority),
+        LLM company research briefs, ATS-compliant resume tailoring (.docx + .pdf),
+        cover letter generation, quality gate (score >= 7/10, retry up to 2x)
+      </phase>
+      <phase number="4" name="Discord coach + manual apply" status="complete">
+        Discord bot: review queue, ApplyCardView (I Applied, Remind Me (2h), Resume Tips, Skip),
+        accountability (/today, /follow_up, /goal, /note, /schedule, /strategy, /myday),
+        charts, /tracker Excel export, reminders + schedule_events, schedule_tick in user TZ.
+        Helix Coach channel (#helix-coach auto-detect or helix_coach_channel_id): coach_channel.py
+        for pasted job URLs + NL career help. No ATS form auto-submit; user applies in browser.
+      </phase>
+      <phase number="5" name="Email + Polish" status="complete">
+        Gmail OAuth2 auth (read-only scope), inbox polling with keyword + LLM classification,
+        fuzzy email-to-job matching, automatic status updates in DB,
+        APScheduler for periodic scans/email checks/daily planning
+      </phase>
+    </phases>
+
+    <tech_stack>
+      <dependency name="playwright" purpose="Optional: LinkedIn job discovery scraping only (not used for form auto-apply)" />
+      <dependency name="discord.py" purpose="Discord bot: primary UI for review, apply cards, digests" />
+      <dependency name="openai" purpose="LLM API for scoring, docs, company research, email parsing" />
+      <dependency name="google-api-python-client" purpose="Gmail API client (read-only)" />
+      <dependency name="google-auth-oauthlib" purpose="Gmail OAuth2 authentication" />
+      <dependency name="openpyxl" purpose="Excel read/write with formatting" />
+      <dependency name="python-docx" purpose="ATS-compliant Word document generation" />
+      <dependency name="pyyaml" purpose="Config parsing (profile, search, secrets)" />
+      <dependency name="requests" purpose="API calls (Adzuna, Jooble, Greenhouse, Lever, SerpAPI)" />
+      <dependency name="cloudscraper" purpose="HTTP fetch for job page checks and coach URL snapshots" />
+      <dependency name="beautifulsoup4" purpose="HTML parsing for job descriptions and coach channel" />
+      <dependency name="rich" purpose="Terminal UI, progress bars, tables, panels" />
+      <dependency name="apscheduler" purpose="Periodic task scheduling (scan, email, plan)" />
+      <dependency name="sqlite-utils" purpose="SQLite helper utilities" />
+      <dependency name="docx2pdf" purpose="Convert .docx to .pdf on Windows (requires MS Word)" />
+      <dependency name="thefuzz" purpose="Fuzzy matching for dedup and email-to-job matching" />
+      <dependency name="click" purpose="CLI framework for all commands" />
+    </tech_stack>
+
+    <data_flow>
+      Job Board APIs + Web Scrapers (LinkedIn may use Playwright for discovery)
+        -&gt; Dedup and Normalize
+        -&gt; SQLite DB (jobs, status_history, reminders, schedule_events)
+        -&gt; Job Scorer (keyword + LLM + sponsorship)
+        -&gt; Optional: resume/cover tailoring + quality gate for prepared applications
+        -&gt; Human Review in Discord (/review, approve/reject)
+        -&gt; Apply card: user opens URL, applies manually, taps I Applied or Remind Me
+        -&gt; Excel export (Applications + Applied + Stats); Gmail read-only monitor updates statuses
+        -&gt; Optional Helix Coach (#helix-coach): URL fetch + fitness + LLM assistance
+    </data_flow>
+  </architecture>
+
+  <rules>
+    <rule id="ats-compliance" priority="critical">
+      <title>ATS (Applicant Tracking System) Compliance - ALWAYS ENFORCED</title>
+      <description>
+        All resumes and cover letters MUST follow ATS-friendly formatting rules.
+        ATS systems parse documents programmatically; non-compliant formatting causes
+        applications to be silently rejected before a human ever sees them.
+      </description>
+      <guidelines>
+        <guideline category="format">
+          Use .docx format as primary (most ATS-compatible). Generate .pdf as secondary.
+        </guideline>
+        <guideline category="format">
+          Use standard, simple fonts: Calibri, Arial, Garamond, or Cambria. Size 10-12pt for body, 14-16pt for name.
+        </guideline>
+        <guideline category="format">
+          NO tables, columns, text boxes, images, graphics, icons, or headers/footers.
+          ATS cannot parse content inside these elements.
+        </guideline>
+        <guideline category="format">
+          Use single-column layout only. Multi-column layouts break ATS parsing.
+        </guideline>
+        <guideline category="format">
+          Use standard section headings exactly as: "Professional Summary", "Experience",
+          "Education", "Skills", "Certifications", "Projects". Do not get creative with heading names.
+        </guideline>
+        <guideline category="format">
+          Use simple bullet points (•). Avoid special characters, symbols, or custom bullet styles.
+        </guideline>
+        <guideline category="format">
+          Do not use "Objective" sections. Use "Professional Summary" instead (2-3 lines max).
+        </guideline>
+        <guideline category="content">
+          Mirror exact keywords and phrases from the job description. If the JD says "CI/CD pipelines",
+          use "CI/CD pipelines" not "continuous integration and deployment".
+        </guideline>
+        <guideline category="content">
+          Spell out abbreviations on first use, then use abbreviation: "Applicant Tracking System (ATS)".
+          Exception: universally known acronyms (SQL, API, HTML, CSS, AWS).
+        </guideline>
+        <guideline category="content">
+          Use reverse chronological order for experience and education.
+        </guideline>
+        <guideline category="content">
+          Include exact job title matches when truthful. If JD says "SDET" and you were an SDET, use "SDET".
+        </guideline>
+        <guideline category="content">
+          Quantify achievements: "Reduced test execution time by 40%", "Automated 200+ test cases".
+          Numbers parse well and stand out to both ATS and humans.
+        </guideline>
+        <guideline category="content">
+          Include both spelled-out and abbreviated versions of technologies where space permits:
+          "Amazon Web Services (AWS)", "Structured Query Language (SQL)".
+        </guideline>
+        <guideline category="content">
+          Do NOT stuff keywords unnaturally. The resume must read well to a human recruiter too.
+          Balance keyword optimization with readability.
+        </guideline>
+        <guideline category="content">
+          Tailor the Professional Summary for each application to match the specific role.
+        </guideline>
+        <guideline category="cover_letter">
+          Cover letters should also be ATS-friendly: plain text formatting, standard structure
+          (greeting, 3 paragraphs, closing), include key role-specific keywords naturally.
+        </guideline>
+        <guideline category="cover_letter">
+          Always address to specific hiring manager if available. Otherwise use "Dear Hiring Team".
+          Never use "To Whom It May Concern".
+        </guideline>
+        <guideline category="filename">
+          Name files as: FirstName_LastName_Resume_CompanyName.docx and
+          FirstName_LastName_CoverLetter_CompanyName.docx. Some ATS index by filename.
+        </guideline>
+      </guidelines>
+    </rule>
+
+    <rule id="quality-first" priority="critical">
+      <title>Quality Over Quantity</title>
+      <description>
+        Every application must be individually researched and tailored. The system generates
+        25 applications/day but each one should look like it was hand-crafted. The quality gate
+        enforces this by scoring documents and rejecting generic output.
+      </description>
+    </rule>
+
+    <rule id="truthfulness" priority="critical">
+      <title>Never Fabricate Experience</title>
+      <description>
+        The LLM may only rephrase, reorder, and emphasize existing experience from the base resume.
+        It must NEVER invent new skills, technologies, job titles, companies, or achievements.
+        Keyword optimization is about phrasing, not fiction.
+      </description>
+    </rule>
+
+    <rule id="human-in-loop" priority="critical">
+      <title>Manual application submission</title>
+      <description>
+        The user submits applications in the employer&apos;s ATS or site in their own browser.
+        Helix provides the link, match context, and tracking via Discord; it does not drive
+        Playwright to submit forms. Resume tips and document prep remain available where implemented.
+      </description>
+    </rule>
+
+    <rule id="visa-priority" priority="high">
+      <title>Visa Sponsorship Prioritization</title>
+      <description>
+        Jobs from known H1B sponsors get scoring bonus. Jobs explicitly stating "no sponsorship"
+        are still included but ranked lower. Never exclude a job solely based on sponsorship status
+        unless the JD explicitly says "must be US citizen" or "no visa sponsorship available".
+      </description>
+    </rule>
+
+    <rule id="rate-limiting" priority="high">
+      <title>Respectful Scraping</title>
+      <description>
+        Use randomized delays (3-10s) between browser actions. Prefer API-based sources.
+        Limit LinkedIn/Indeed scraping to 50 jobs per session. Cache everything in SQLite
+        to avoid re-scraping. Respect robots.txt where applicable.
+      </description>
+    </rule>
+
+    <rule id="data-privacy" priority="high">
+      <title>Secrets and Privacy</title>
+      <description>
+        API keys and tokens in config/secrets.yaml, config/credentials.json, config/gmail_token.json.
+        Personal data in config/profile.yaml. All are .gitignored. Never log API keys.
+      </description>
+    </rule>
+
+    <rule id="email-safety" priority="medium">
+      <title>Email Monitoring Safety</title>
+      <description>
+        Gmail monitor is READ-ONLY. It never sends, deletes, modifies, or moves emails.
+        It only reads subject lines and bodies to classify application status.
+        Every classification is logged for manual review.
+      </description>
+    </rule>
+  </rules>
+
+  <directory_structure>
+    <![CDATA[
+    job-automation/
+      PROJECT_CONTEXT.xml       # Authoritative product context (coach model)
+      README.md                 # Overview; points to SETUP.md for full install
+      SETUP.md                  # Canonical step-by-step setup (clone → bot → secrets → profile)
+      GUIDE.md                  # CLI power-user reference (not primary onboarding)
+      docs/BETA_LAUNCH.md       # Pre-ship checklist
+      requirements.txt
+      pytest.ini / tests/       # Apply-flow and integration smoke tests
+      scripts/
+        test_helix_integration.py   # Schedule + matching + voice (no Discord)
+        verify_bot_startup.py       # Schedule preview (same idea as bot console)
+      config/
+        profile.yaml / profile.template.yaml   # Skills, schedule (profile.yaml gitignored)
+        search_config.yaml       # Scraper queries and toggles
+        secrets.yaml (gitignored)
+      src/
+        cli.py                  # CLI: scan, stats, prepare, monitor, etc. (no apply subcommand)
+        scheduler.py            # APScheduler for CLI-side periodic tasks
+        discord/
+          bot.py                # Slash commands, schedule_tick, digests, reminders
+          views.py              # ReviewView, ApplyCardView, batch review
+          coach_channel.py      # NL coach (#helix-coach): URLs, cover letter, LinkedIn, Q&amp;A
+          voice.py              # Helix tone strings
+          charts.py
+        utils/schedule.py       # Timezone, apply windows, digest triggers
+        apply/
+          job_checker.py        # HTTP check for expired jobs / competition (cloudscraper)
+          url_resolver.py       # Resolve aggregator URLs to ATS URLs
+        scrapers/               # Adzuna, Jooble, The Muse, Greenhouse, Lever, Google Jobs, LinkedIn
+        matching/               # scorer, llm_scorer, profile_fitness, sponsorship, dedup, ...
+        quality/                # daily_planner, company_research, quality_gate
+        documents/              # resume_tailor, cover_letter
+        email/                  # Gmail read-only monitor
+        tracker/                # db.py (reminders, schedule_events), excel_tracker (Applications/Applied/Stats)
+      output/                   # jobs.db (gitignored pattern), generated artifacts
+    ]]>
+  </directory_structure>
+
+  <notes_for_future_sessions>
+    <note priority="critical">
+      Coach model is live: primary UX is Discord (python -m src.discord.bot). Restart bot after code changes.
+      Slash commands include /schedule, /strategy, /myday, /today, /follow_up, /goal, /note, /tracker.
+      Create #helix-coach for Helix Coach NL channel (auto-detected). No CLI/browser ATS auto-submit.
+    </note>
+    <note priority="critical">
+      Setup for new users: follow SETUP.md end-to-end. Fill config/profile.yaml (timezone, apply_windows),
+      config/secrets.yaml (Discord token; Ollama default LLM). Optional: search_config.yaml, credentials.json.
+      Flow: /scan -&gt; /review -&gt; approve -&gt; apply card -&gt; manual apply -&gt; I Applied.
+    </note>
+    <note priority="critical">
+      The user is on F1-OPT visa. This is time-sensitive - they need a full-time sponsored position.
+      Sponsorship priority is baked into scoring and planning. Never compromise on this.
+    </note>
+    <note priority="high">
+      ATS compliance is enforced in resume_tailor.py and cover_letter.py via LLM system prompts.
+      The quality_gate.py scores documents on ATS compliance, keyword match, relevance, and
+      readability. Documents must score >= 7/10 or they are regenerated (up to 2 retries).
+    </note>
+    <note priority="high">
+      API keys are ALL configured in config/secrets.yaml:
+      OpenAI (LLM scoring + docs), Adzuna (free), Jooble (free), SerpAPI (free 100/mo).
+      Greenhouse, Lever, The Muse, and LinkedIn don't need keys.
+    </note>
+    <note>
+      There is no automated ATS form submission in-repo. Tracking and reminders happen in Discord
+      and SQLite; the user submits applications on employer sites manually.
+    </note>
+    <note>
+      Gmail monitoring (Phase 5) requires config/credentials.json from Google Cloud Console.
+      This is optional - the system works without it. When configured, it only uses
+      gmail.readonly scope and NEVER sends, deletes, or modifies emails.
+    </note>
+    <note>
+      The scheduler (src/scheduler.py) can run the full pipeline on autopilot:
+      scan every N hours, check email every N minutes, generate daily plan at a set time.
+      Use 'python -m src.cli schedule' to start it.
+    </note>
+    <note>
+      GUIDE.md documents CLI commands (scan, prepare, monitor, schedule). Onboarding is SETUP.md only.
+    </note>
+  </notes_for_future_sessions>
+</project>

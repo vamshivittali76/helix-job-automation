@@ -1,0 +1,187 @@
+# ============================================================
+# HELIX — User Profile Configuration
+# SETUP: Copy this file to profile.yaml and fill in your info.
+#   cp config/profile.template.yaml config/profile.yaml
+#
+# WARNING: profile.yaml contains PII and is gitignored.
+# NEVER commit it.
+# ============================================================
+
+# ── Personal Info ───────────────────────────────────────────
+personal:
+  first_name: "Jane"
+  last_name: "Doe"
+  email: "jane.doe@email.com"
+  phone: "+1 (555) 000-0000"
+  linkedin: "https://linkedin.com/in/your-profile"
+  github: "https://github.com/your-username"
+  location: "City, State"
+
+# ── Visa / Work Authorization ───────────────────────────────
+visa:
+  status: "F1-OPT"           # e.g. F1-OPT, H1B, Green Card, US Citizen
+  requires_sponsorship: true  # true if you need H1B sponsorship
+  work_authorized: true       # true if currently authorized to work in the US
+
+# ── Job Targeting ───────────────────────────────────────────
+target_roles:
+  - "SDET"
+  - "Software Development Engineer in Test"
+  - "QA Automation Engineer"
+  - "Software Engineer"
+  # Add more target titles here
+
+experience_level: "mid"       # entry | mid | senior | lead
+years_of_experience: 3        # Total professional years
+
+# ── Skills ──────────────────────────────────────────────────
+# List every technology you can legitimately claim on a resume.
+# Be honest — the LLM uses this for tailoring and will not invent skills.
+skills:
+  programming_languages:
+    - "Python"
+    - "JavaScript"
+    - "TypeScript"
+    - "SQL"
+
+  testing_tools:
+    - "Playwright"
+    - "Selenium"
+    - "Postman"
+    - "Jest"
+    - "Pytest"
+
+  frameworks:
+    - "React"
+    - "Node.js"
+
+  cloud_and_devops:
+    - "Docker"
+    - "Git"
+    - "CI/CD"
+    - "Azure DevOps"
+
+  databases:
+    - "PostgreSQL"
+    - "MySQL"
+
+  methodologies:
+    - "Agile"
+    - "Scrum"
+    - "API Testing"
+    - "Regression Testing"
+
+  # Add more skill categories as needed (they'll be picked up automatically)
+
+# ── Work Experience ─────────────────────────────────────────
+# Used by LLM scoring and resume tailoring.
+# Be specific — accomplishments with numbers score much higher.
+work_experience:
+  - company: "Your Current Employer"
+    title: "Your Job Title"
+    start: "2023-06"          # YYYY-MM
+    end: "present"            # YYYY-MM or "present"
+    employment_type: "full-time"  # full-time | contract | part-time
+    technologies:
+      - "Python"
+      - "Playwright"
+      - "Azure DevOps"
+    accomplishments:
+      - "Automated 200+ regression tests, reducing manual QA effort by 60%"
+      - "Built CI/CD pipeline that cut release cycle from 2 weeks to 3 days"
+      - "Mentored 2 junior engineers on test automation best practices"
+
+  - company: "Previous Employer"
+    title: "Previous Title"
+    start: "2022-01"
+    end: "2023-05"
+    employment_type: "full-time"
+    technologies:
+      - "JavaScript"
+      - "Selenium"
+      - "Jenkins"
+    accomplishments:
+      - "Reduced production defect rate by 35% through comprehensive API testing"
+
+# ── Projects ────────────────────────────────────────────────
+# Personal/side projects that demonstrate initiative and skills.
+projects:
+  - name: "Your Project Name"
+    technologies:
+      - "Python"
+      - "OpenAI"
+    summary: "Brief one-line description of what the project does and its impact"
+    url: "https://github.com/your-username/your-project"  # optional
+
+# ── Key Achievements ────────────────────────────────────────
+# Top 3-5 quantified accomplishments. Used in resume summaries and cover letters.
+# Format: action verb + metric + impact
+key_achievements:
+  - "Automated 200+ regression tests, reducing release cycle by 40%"
+  - "Led migration from manual QA to full automation framework serving 5 teams"
+  - "Reduced critical bug escape rate by 50% through shift-left testing strategy"
+
+# ── Education ───────────────────────────────────────────────
+education:
+  - degree: "Master of Science"
+    field: "Computer Science"
+    university: "Your University"
+    location: "City, State"
+    graduation_year: 2024
+
+  - degree: "Bachelor of Technology"
+    field: "Computer Science and Engineering"
+    university: "Your Undergraduate University"
+    location: "City, Country"
+    graduation_year: 2022
+
+# ── Certifications ──────────────────────────────────────────
+# List any relevant certifications.
+certifications:
+  # - name: "AWS Certified Developer"
+  #   issuer: "Amazon Web Services"
+  #   year: 2023
+
+# ── Job Preferences ─────────────────────────────────────────
+preferences:
+  employment_type: "full-time"
+  min_salary: 80000             # USD — used to filter low-pay roles
+  location_types:
+    - "remote"
+    - "hybrid"
+    - "onsite"
+  preferred_company_sizes:
+    - "startup"
+    - "mid-size"
+    - "enterprise"
+  excluded_companies:           # Companies you never want to apply to
+    - "TEKsystems"
+    # - "Staffing Agency Name"
+
+daily_application_target: 5   # How many jobs you aim to apply to per day
+
+# ── Schedule ────────────────────────────────────────────────
+# Digests and auto-scans use YOUR timezone below (not the PC clock).
+# Morning digest: start of first apply window today. Evening summary: end of last window.
+# Auto-scan: 15 minutes before each window. Follow-up nudge: 45 min after first window starts.
+# Optional: reminders_only_in_apply_windows delays reminder DMs until you are in a window.
+# Leave a day empty ([]) for a rest day (digests/scans skipped that day).
+schedule:
+  timezone: "America/New_York"   # IANA zone, e.g. America/Chicago, US/Pacific
+  apply_windows:
+    monday:    ["08:00-11:00", "19:00-21:00"]
+    tuesday:   ["08:00-11:00", "19:00-21:00"]
+    wednesday: ["08:00-11:00", "19:00-21:00"]
+    thursday:  ["08:00-11:00", "19:00-21:00"]
+    friday:    ["08:00-11:00"]
+    saturday:  []                # rest day
+    sunday:    ["10:00-12:00"]
+  notification_tolerance_minutes: 12   # widen (e.g. 20) if a digest misses right after bot restart
+  reminders_only_in_apply_windows: true
+
+  # ── Application strategy (optional) ─────────────────────────
+  # apply_windows are the times you commit to job search; Helix splits your daily goal across them.
+  weekly_application_target: 25        # optional weekly bar; shown in /strategy; if daily_application_target is omitted, daily is derived from this / active apply days
+  apps_per_hour_assumption: 2          # how many complete applies (review+submit+log) fit in one hour; caps realistic daily output from your window minutes
+  strategy_notes: ""                   # free text, e.g. "Heavy meetings Mon–Wed; catch up Thu eve" — shown in /strategy
+  catch_up_policy: "even_split"        # "even_split" = spread weekly deficit across remaining apply days this week; "next_window" = mentally front-load the next window (used in messaging only for MVP)

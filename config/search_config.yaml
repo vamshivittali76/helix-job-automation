@@ -1,0 +1,69 @@
+# ============================================================
+# SEARCH CONFIGURATION - Controls how job scrapers find jobs
+# ============================================================
+
+search_queries:
+  - title: "SDET"
+    keywords: "selenium python automation testing"
+  - title: "Software Development Engineer in Test"
+    keywords: "test automation framework"
+  - title: "Software Engineer"
+    keywords: "python java backend"
+  - title: "QA Automation Engineer"
+    keywords: "test automation CI/CD"
+  - title: "QA Engineer"
+    keywords: "quality assurance testing automation"
+  - title: "Test Automation Engineer"
+    keywords: "selenium pytest automation"
+
+locations:
+  - "United States"
+  - "Remote"
+
+filters:
+  employment_type: "full-time"
+  experience_level: "mid"
+  max_days_old: 14
+  min_salary: 70000
+
+scrapers:
+  adzuna:
+    enabled: true
+    country: "us"
+    results_per_page: 50
+    max_pages: 3
+
+  jooble:
+    enabled: true
+    results_per_request: 50
+
+  themuse:
+    enabled: true
+    results_per_page: 20
+    max_pages: 5
+
+  greenhouse:
+    enabled: true
+    max_per_board: 15
+    # Override default board list (optional):
+    # boards: ["airbnb", "stripe", "cloudflare"]
+
+  lever:
+    enabled: true
+    max_per_company: 15
+    # Override default company list (optional):
+    # companies: ["netflix", "databricks", "anthropic"]
+
+  google_jobs:
+    enabled: true
+    max_pages: 3
+
+  linkedin:
+    enabled: true
+    headless: true
+    max_results: 50
+
+  indeed:
+    enabled: false  # Phase 5
+
+scrape_interval_hours: 6

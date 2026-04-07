@@ -1,0 +1,57 @@
+# ============================================================
+# Helix – Job Automation Agent
+# .gitignore — protects credentials, PII, and generated output
+# ============================================================
+
+# ── Credentials & Secrets ───────────────────────────────────
+config/secrets.yaml
+config/profile.yaml
+config/gmail_token.json
+config/credentials.json
+
+# ── Generated Output ────────────────────────────────────────
+output/
+templates/base_resume.docx
+templates/*.docx
+templates/*.pdf
+
+# ── Database (contains scraped job data and PII notes) ──────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Playwright / Browser State ──────────────────────────────
+output/browser_state.json
+playwright-report/
+test-results/
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual Environments ────────────────────────────────────
+venv/
+.venv/
+env/
+.env
+
+# ── Office temp files (opened .docx creates ~$… lock files) ───
+~$*
+
+# ── IDE & OS ────────────────────────────────────────────────
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs & Temp ─────────────────────────────────────────────
+*.log
+*.tmp
