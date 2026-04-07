@@ -23,7 +23,7 @@ Helix is a Discord-native job search coach: it scans sources, scores jobs, queue
 ## Step 1 — Get the code
 
 ```bash
-git clone https://github.com/vamshivittali76/helix-job-automation.git
+git clone https://github.com/YOUR_ORG/helix-job-automation.git
 cd helix-job-automation
 ```
 
@@ -187,3 +187,5 @@ In **`#helix-coach`** (if you created it): paste a job URL for fit/viability/tip
 ## Feedback
 
 Open a GitHub issue or share feedback from the beta. This guide is the **single place** for full install steps; **[GUIDE.md](GUIDE.md)** covers CLI power-user flows.
+
+**Publishing the repo:** before you `git push` a public fork, run the **repository hygiene** checklist in **[docs/BETA_LAUNCH.md §3a](docs/BETA_LAUNCH.md#3a-repository-hygiene-before-push)** so secrets and personal data never land in git history.

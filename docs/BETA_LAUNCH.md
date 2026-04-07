@@ -69,7 +69,36 @@ CI (GitHub Actions) runs `pytest` on push/PR to `main` / `master`.
 
 ## 3. GitHub
 
+### 3a. Repository hygiene before push
+
+Use this before every push; it is **required** for a public or open-source repo.
+
+Run from the repo root. **Goal:** no secrets, no real `profile.yaml` / `secrets.yaml`, and no personal employer names or identifiers in **tracked** files.
+
+| Step | Command or action | What you want |
+|------|-------------------|---------------|
+| 1 | `git status` | Nothing under **Changes to be committed** that should be private (`config/profile.yaml`, `config/secrets.yaml`, `config/credentials.json`, `config/gmail_token.json`, anything under `output/`). |
+| 2 | `git ls-files config/` | Only safe, intentional paths — typically `profile.template.yaml`, `secrets.template.yaml`, `search_config.yaml`. **Not** `profile.yaml` or `secrets.yaml`. |
+| 3 | `git check-ignore -v config/profile.yaml` | Prints the `.gitignore` rule that ignores `profile.yaml` (confirms it will not be committed by default). |
+| 4 | `git diff` and, if staging, `git diff --cached` | No API keys, Discord tokens, or pasted personal URLs. |
+| 5 | String checks on tracked text (adjust names to your situation) | No matches for employer names or your name in templates/docs: |
+
+```bash
+# Tracked files only — expect empty output (no matches)
+git grep -i "tek" -- "*.yaml" "*.yml" "*.md" "*.xml" 2>nul
+git grep -i "vamshi" 2>nul
+```
+
+On **PowerShell**, use `$null` instead of `2>nul`, or run the `git grep` lines without redirection; empty output means no hits.
+
+| 6 | Open **`config/profile.template.yaml`** and **`PROJECT_CONTEXT.xml`** | Placeholders only (e.g. Jane Doe, `YOUR_ORG`); no real employers, emails, or home addresses. |
+| 7 | **`README.md` / `SETUP.md`** clone URL | Replace `YOUR_ORG` with your real org or username **once** the public repo exists — or keep placeholder until then. |
+| 8 | Optional — history | If you **ever** committed secrets or `profile.yaml`, rotate those keys/tokens and consider [git filter-repo](https://github.com/newren/git-filter-repo) or a fresh public repo; a normal `git push` does not remove old commits from history. |
+
+### 3b. Release checklist
+
 - [ ] `secrets.yaml` is **never** committed (`.gitignore`).
+- [ ] Section **3a** steps satisfied for the branch you are pushing.
 - [ ] `pytest` green locally and on CI.
 - [ ] Tag: `git tag v0.x.y && git push origin v0.x.y`
 - [ ] Release notes: Ollama-first LLM, `/myday`, link to SETUP.md.

@@ -154,9 +154,7 @@ preferences:
     - "startup"
     - "mid-size"
     - "enterprise"
-  excluded_companies:           # Companies you never want to apply to
-    - ""
-    # - "Staffing Agency Name"
+  excluded_companies: []        # Add employers to skip in profile.yaml (gitignored); keep template empty
 
 daily_application_target: 5   # How many jobs you aim to apply to per day
 

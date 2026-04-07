@@ -573,8 +573,7 @@ def _run_email_check() -> str:
         return f"\u26a0 Gmail not configured or error: {e}"
 
 
-@tree.command(name="tracker", description="Download Excel job tracker (refreshed from your database)")
-async def cmd_tracker(interaction: discord.Interaction):
+async def _run_tracker_export(interaction: discord.Interaction) -> None:
     await interaction.response.defer(ephemeral=True)
     try:
         from src.tracker.excel_tracker import export_jobs_to_excel, TRACKER_PATH
@@ -601,6 +600,16 @@ async def cmd_tracker(interaction: discord.Interaction):
         )
     except Exception as e:
         await interaction.followup.send(f"\u274c Error: {e}", ephemeral=True)
+
+
+@tree.command(name="tracker", description="Download Excel job tracker (refreshed from your database)")
+async def cmd_tracker(interaction: discord.Interaction):
+    await _run_tracker_export(interaction)
+
+
+@tree.command(name="track", description="Alias for /tracker — download Excel job tracker")
+async def cmd_track(interaction: discord.Interaction):
+    await _run_tracker_export(interaction)
 
 
 # ── Chart Commands ──────────────────────────────────────────
@@ -1386,6 +1395,7 @@ COMMAND_CATEGORIES = {
         "/status <company>": "Check application status for a company",
         "/set_status <job_id> <status>": "Manually change a job's status",
         "/tracker": "Download Excel tracker: Applications (queue), Applied (submissions), Stats",
+        "/track": "Same as /tracker",
     },
     "Analytics": {
         "/stats": "Show job search statistics",
@@ -1451,13 +1461,32 @@ async def cmd_pin_commands(interaction: discord.Interaction):
 
 # ── Bot Events ──────────────────────────────────────────────
 
+def _sync_guild_object() -> discord.Object | None:
+    """If ``discord_guild_id`` is set in secrets, sync commands to that guild only (updates in seconds)."""
+    raw = SECRETS.get("discord_guild_id")
+    if raw is None or raw == "":
+        return None
+    try:
+        gid = int(raw)
+    except (TypeError, ValueError):
+        return None
+    if gid == 0:
+        return None
+    return discord.Object(id=gid)
+
+
 @bot.event
 async def on_ready():
     global NOTIFICATION_CHANNEL_ID, COACH_CHANNEL_ID, _tasks_started
     try:
         print(f"Helix connected as {bot.user} – syncing commands...")
-        await tree.sync()
-        print(f"Helix online | Synced slash commands")
+        guild_obj = _sync_guild_object()
+        if guild_obj:
+            synced = await tree.sync(guild=guild_obj)
+            print(f"Helix online | Synced {len(synced)} slash command(s) to guild {guild_obj.id} (instant)")
+        else:
+            await tree.sync()
+            print("Helix online | Synced slash commands globally (Discord may take up to ~1h to show new commands)")
     except Exception as exc:
         print(f"Command sync failed: {exc}")
 

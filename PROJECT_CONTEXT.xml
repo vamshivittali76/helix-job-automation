@@ -21,22 +21,19 @@
     </description>
   </meta>
 
-  <user_profile note="Illustrative defaults for PROJECT_CONTEXT; real PII lives in config/profile.yaml (gitignored).">
-    <current_role>Quality Engineer (Contractor)</current_role>
-    <visa_status>F1-OPT (requires H1B sponsorship)</visa_status>
-    <experience_level>Mid-level (2-5 years)</experience_level>
+  <user_profile note="Fictional example only. Real job targets, visa, and PII belong in config/profile.yaml (gitignored); copy from config/profile.template.yaml.">
+    <current_role>Software Engineer (example)</current_role>
+    <visa_status>Example — set your real status in profile.yaml</visa_status>
+    <experience_level>Mid-level (example)</experience_level>
     <target_roles>
-      <role>SDET / Software Development Engineer in Test</role>
-      <role>Software Engineer</role>
-      <role>QA Engineer (Manual + Automation)</role>
-      <role>QA Automation Engineer</role>
+      <role>Backend Engineer</role>
+      <role>Full-stack Engineer</role>
     </target_roles>
-    <location_preference>All (remote, hybrid, on-site - widest net)</location_preference>
-    <employment_type>Full-time only (transitioning from contractor)</employment_type>
-    <email_provider>Gmail</email_provider>
+    <location_preference>Remote-first (example)</location_preference>
+    <employment_type>Full-time (example)</employment_type>
+    <email_provider>Your provider in profile.yaml</email_provider>
     <sponsorship_priority>
-      Prioritize jobs from known H1B sponsors, but do NOT exclude non-sponsor jobs.
-      Tag all jobs with sponsorship likelihood for informed decision-making.
+      Configure sponsorship preferences in profile.yaml; Helix can tag jobs with sponsorship likelihood for informed decisions.
     </sponsorship_priority>
   </user_profile>
 

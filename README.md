@@ -59,7 +59,7 @@ Full descriptions: use **`/help`** in Discord or browse [src/discord/bot.py](src
 Full detail is only in **[SETUP.md](SETUP.md)**.
 
 ```bash
-git clone https://github.com/vamshivittali76/helix-job-automation.git
+git clone https://github.com/YOUR_ORG/helix-job-automation.git
 cd helix-job-automation
 python -m venv venv && venv\Scripts\activate   # Windows
 pip install -r requirements.txt
@@ -84,7 +84,9 @@ python -m src.discord.bot
 
 - `config/profile.yaml` and `config/secrets.yaml` are **gitignored**
 - `output/` (database, tracker, generated files) is **gitignored**
-- Only **templates** (e.g. `*.template.yaml`) belong in git
+- Only **templates** (e.g. `*.template.yaml`) belong in git — keep them **generic** (no real employers, emails, or personal URLs)
+
+**Before you push (especially a public repo):** run the **repository hygiene** checks in **[docs/BETA_LAUNCH.md §3a](docs/BETA_LAUNCH.md#3a-repository-hygiene-before-push)** (`git status`, `git ls-files config/`, `git grep` on templates, diff review).
 
 ---
 
@@ -112,7 +114,7 @@ config/
   search_config.yaml      Search queries and scraper toggles
 ```
 
-Deeper product context for contributors and AI sessions: **[PROJECT_CONTEXT.xml](PROJECT_CONTEXT.xml)**.
+Deeper product context for contributors and AI sessions: **[PROJECT_CONTEXT.xml](PROJECT_CONTEXT.xml)**. The `<user_profile>` block is a fictional example; real targets and PII stay in gitignored `config/profile.yaml`.
 
 ---
 
