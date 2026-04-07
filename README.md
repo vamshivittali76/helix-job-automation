@@ -59,8 +59,8 @@ Full descriptions: use **`/help`** in Discord or browse [src/discord/bot.py](src
 Full detail is only in **[SETUP.md](SETUP.md)**.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO
+git clone https://github.com/vamshivittali76/helix-job-automation.git
+cd helix-job-automation
 python -m venv venv && venv\Scripts\activate   # Windows
 pip install -r requirements.txt
 cp config/secrets.template.yaml config/secrets.yaml

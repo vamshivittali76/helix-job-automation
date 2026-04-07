@@ -23,8 +23,8 @@ Helix is a Discord-native job search coach: it scans sources, scores jobs, queue
 ## Step 1 — Get the code
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO
+git clone https://github.com/vamshivittali76/helix-job-automation.git
+cd helix-job-automation
 ```
 
 ---
